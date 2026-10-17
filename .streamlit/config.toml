@@ -1,0 +1,63 @@
+[theme]
+base = "dark"
+primaryColor = "#3B82F6"
+backgroundColor = "#0F172A"
+secondaryBackgroundColor = "#1E293B"
+codeBackgroundColor = "#1E293B"
+textColor = "#F1F5F9"
+linkColor = "#60A5FA"
+borderColor = "#334155"
+codeTextColor = "#CBD5E1"
+showWidgetBorder = true
+showSidebarBorder = true
+baseRadius = "8px"
+buttonRadius = "8px"
+
+# Typography - Clean, modern AI web fonts (Inter)
+font = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+headingFont = "'Inter':https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap"
+codeFont = "'JetBrains Mono':https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+baseFontSize = 14
+baseFontWeight = 400
+codeFontSize = "13px"
+headingFontSizes = ["28px", "22px", "18px", "16px", "14px", "12px"]
+headingFontWeights = [700, 600, 600, 600, 500, 500]
+linkUnderline = false
+
+# Semantic colors
+greenColor = "#10B981"
+redColor = "#EF4444"
+yellowColor = "#F59E0B"
+orangeColor = "#FB923C"
+blueColor = "#3B82F6"
+violetColor = "#A855F7"
+grayColor = "#94A3B8"
+
+# Chart colors for dark background
+chartCategoricalColors = [
+    "#3B82F6",
+    "#10B981",
+    "#A855F7",
+    "#EF4444",
+    "#F59E0B",
+    "#06B6D4",
+    "#94A3B8",
+    "#FB923C",
+]
+
+dataframeBorderColor = "#334155"
+dataframeHeaderBackgroundColor = "#1E293B"
+dataframeHeaderTextColor = "#F8FAFC"
+
+[theme.sidebar]
+backgroundColor = "#0F172A"
+secondaryBackgroundColor = "#1E293B"
+codeBackgroundColor = "#1E293B"
+textColor = "#F1F5F9"
+borderColor = "#334155"
+primaryColor = "#3B82F6"
+
+[server]
+headless = true
+enableCORS = true
+enableXsrfProtection = true
