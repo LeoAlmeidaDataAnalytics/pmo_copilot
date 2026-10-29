@@ -73,6 +73,7 @@ teste/
 │       ├── config.py           # Configurações de caminhos e inicialização do Gemini
 │       ├── domain.py           # Regras de conformidade, limites, matriz de risco e fases FEL
 │       ├── reporting.py        # Montagem do relatório e validador anti-alucinação
+│       ├── health.py           # Health checks (liveness/readiness/deep): SQLite, motor EVM, Gemini, I/O
 │       ├── cli.py              # Linha de comando para rodar a Crew autônoma
 │       ├── data/
 │       │   ├── generator.py    # Gerador sintético com curvas S, EVM e injeção de falhas
@@ -88,6 +89,7 @@ teste/
     ├── test_analytics.py       # Testes unitários de EVM e consistência contábil
     ├── test_compliance.py      # Testes de auditoria e recall contra o gabarito mock
     ├── test_chat.py            # Testes do agente conversacional
+    ├── test_health.py          # Testes dos health checks (liveness, motor EVM, banco, agregação)
     └── test_reporting.py       # Testes do validador anti-alucinação de códigos
 ```
 
@@ -119,10 +121,19 @@ python -m pmo_copilot.cli
 ```
 O relatório será gravado automaticamente na pasta `reports/`.
 
-### 4. Rodar a Suíte de Testes Automatizados (13 Testes)
+### 4. Rodar a Suíte de Testes Automatizados (17 Testes)
 ```bash
 pytest -v
 ```
+
+### 4.1 Health Check (Observabilidade)
+O módulo `src/pmo_copilot/health.py` fornece verificações de saúde com status RFC (`pass`/`warn`/`fail`):
+- **Liveness** (`check_liveness`): processo vivo, uptime e versão (sem I/O).
+- **Readiness / Deep** (`check_system_health`): SQLite (conexão read-only, 10 tabelas, latência), motor determinístico EVM (autoteste) e catálogo de regras, chave/API Gemini (chave mascarada; ping de rede opcional, sem custo de tokens) e I/O de `data/` e `reports/`.
+- **Agregação:** qualquer componente essencial `unhealthy` → HTTP 503; `degraded` (ex.: sem chave Gemini) → 200; tudo ok → 200.
+- **Frontend:** pílula `/health` na barra superior e painel "Inspecionar Probes" na sidebar do dashboard.
+- **Liveness nativa do Streamlit:** `curl -i http://localhost:8501/_stcore/health`.
+- **Pendente:** rota HTTP própria `/health` (exigiria wrapper `st.App`/ASGI).
 
 ### 5. Regenerar ou Alterar o Volume da Base Mock
 ```bash

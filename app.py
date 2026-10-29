@@ -14,7 +14,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from pmo_copilot import config, domain
+from pmo_copilot import config, domain, health
 from pmo_copilot.analytics import compliance, metrics
 from pmo_copilot.data import repository
 from pmo_copilot.data.generator import gerar_portfolio, salvar
@@ -503,6 +503,87 @@ with st.sidebar:
                 st.success("Base mock regenerada!")
                 st.rerun()
 
+    # ==========================================================================
+    # MONITOR DE SAÚDE (/health) & OBSERVABILIDADE NO FRONTEND
+    # ==========================================================================
+    verify_net_flag = st.session_state.get("health_verify_net", False)
+    health_report = health.check_system_health(verify_gemini_network=verify_net_flag)
+    if verify_net_flag:
+        st.session_state["health_verify_net"] = False
+        st.session_state["last_deep_health"] = health_report
+
+    active_health = st.session_state.get("last_deep_health", health_report)
+    # Atualiza sem ping de rede caso a chave tenha acabado de mudar, mantendo ping se já feito
+    if not verify_net_flag and "last_deep_health" not in st.session_state:
+        active_health = health_report
+
+    cor_health_map = {
+        "healthy": ("#10B981", "rgba(16, 185, 129, 0.16)", "OPERACIONAL (PASS)"),
+        "degraded": ("#F59E0B", "rgba(245, 158, 11, 0.16)", "DEGRADADO (WARN)"),
+        "unhealthy": ("#EF4444", "rgba(239, 68, 68, 0.16)", "INDISPONÍVEL (FAIL)"),
+    }
+    h_color, h_bg, h_label = cor_health_map.get(active_health.status, ("#10B981", "rgba(16,185,129,0.16)", "OK"))
+
+    with st.container(border=True):
+        st.markdown(
+            f"""
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="font-size:13px;font-weight:700;color:#F8FAFC;display:flex;align-items:center;gap:6px;">
+                    🩺 System Health <code>/health</code>
+                </span>
+                <span style="background:{h_bg};color:{h_color};border:1px solid {h_color};border-radius:999px;padding:2px 9px;font-size:10.5px;font-weight:700;">
+                    ● HTTP {active_health.http_status_code} • {h_label}
+                </span>
+            </div>
+            <div style="font-size:11.5px;color:#94A3B8;margin-bottom:8px;">
+                Latência: <strong style="color:#CBD5E1;">{active_health.total_latency_ms:.1f} ms</strong> •
+                Uptime: <strong style="color:#CBD5E1;">{int(active_health.uptime_seconds)}s</strong> •
+                v{active_health.version}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        with st.popover(":material/monitor_heart: Inspecionar Probes & `/health`", width="stretch"):
+            st.markdown("#### 🩺 Diagnóstico de Saúde & Observabilidade (`/health`)")
+            st.caption(
+                "Padrão RFC Health Check (`pass` / `warn` / `fail`) + Kubernetes Liveness & Readiness Probes."
+            )
+
+            m_h1, m_h2, m_h3 = st.columns(3)
+            m_h1.metric("Status Global", active_health.status.upper(), f"RFC: {active_health.rfc_status.upper()}")
+            m_h2.metric("HTTP Status", f"{active_health.http_status_code}", "200 OK" if active_health.http_status_code == 200 else "503 Unavailable")
+            m_h3.metric("Latência Total", f"{active_health.total_latency_ms:.1f} ms", f"Uptime: {int(active_health.uptime_seconds)}s")
+
+            st.markdown("##### 🔍 Componentes Verificados (Deep Health)")
+            for comp_key, comp in active_health.components.items():
+                c_dot = "🟢" if comp.status == "healthy" else ("🟡" if comp.status == "degraded" else "🔴")
+                st.markdown(
+                    f"<div class='metric-card' style='padding:10px 12px;margin-bottom:6px;'>"
+                    f"<div style='display:flex;justify-content:space-between;align-items:center;'>"
+                    f"<span style='font-weight:600;font-size:12.5px;color:#F8FAFC;'>{c_dot} {comp.name}</span>"
+                    f"<span style='font-family:JetBrains Mono,monospace;font-size:11px;color:#94A3B8;'>{comp.latency_ms:.1f} ms • {comp.rfc_status.upper()}</span>"
+                    f"</div>"
+                    f"<div style='font-size:11.5px;color:#CBD5E1;margin-top:3px;'>{comp.message}</div>"
+                    f"</div>",
+                    unsafe_allow_html=True,
+                )
+
+            col_ping1, col_ping2 = st.columns(2)
+            with col_ping1:
+                if st.button(":material/network_ping: Testar Rede Gemini API", width="stretch", key="btn_ping_gemini"):
+                    st.session_state["health_verify_net"] = True
+                    st.rerun()
+            with col_ping2:
+                if st.button(":material/refresh: Atualizar Checks", width="stretch", key="btn_refresh_health"):
+                    st.session_state.pop("last_deep_health", None)
+                    st.rerun()
+
+            with st.expander("📄 Ver Payload JSON do Health Check"):
+                st.caption("Sonda de liveness nativa do Streamlit (para Load Balancers / Kubernetes) e payload completo abaixo:")
+                st.code("curl -i http://localhost:8501/_stcore/health", language="bash")
+                st.json(active_health.to_dict())
+
 # ==============================================================================
 # 1. APLICAÇÃO DOS FILTROS DA BARRA LATERAL (BASE)
 # ==============================================================================
@@ -590,6 +671,9 @@ st.markdown(
             <span style="color:#94A3B8;font-weight:400;">{escopo_label}</span>
         </div>
         <div class="exec-pill-bar">
+            <span class="exec-pill" style="border-color:{h_color};background:{h_bg};" title="Status do Health Check (/health): {active_health.status.upper()} • HTTP {active_health.http_status_code}">
+                <span style="color:{h_color};">●</span> <code>/health</code>: <strong style="color:{h_color};">{active_health.rfc_status.upper()} ({active_health.total_latency_ms:.0f}ms)</strong>
+            </span>
             <span class="exec-pill">📅 Corte: <strong style="color:#60A5FA;">{port.data_corte.strftime('%d/%m/%Y')}</strong></span>
             <span class="exec-pill">🔴 <strong style="color:#FCA5A5;">{n_vermelhos}</strong></span>
             <span class="exec-pill">🟡 <strong style="color:#FCD34D;">{n_amarelos}</strong></span>

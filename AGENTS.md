@@ -39,11 +39,12 @@
   - `analytics/metrics.py`: Fórmulas exatas de EVM e cálculo de curvas S acumuladas.
   - `analytics/compliance.py`: Motor determinístico de auditoria e atribuição de semáforo.
   - `reporting.py`: Montagem de relatórios com números do sistema e validador anti-alucinação de códigos.
+  - `health.py`: Health checks determinísticos (liveness, readiness, deep) com status RFC pass/warn/fail: SQLite, motor EVM, API Gemini (chave mascarada) e I/O. Exibido no dashboard (pílula `/health` + popover na sidebar).
   - `agents/tools.py`: Ferramentas estruturadas (`@tool`) para CrewAI consumirem o motor determinístico.
   - `agents/crew.py`: Definição dos 4 agentes CrewAI (Controller CAPEX, Auditor Stage-Gate, Especialista em Riscos, Gerente Geral PMO).
   - `agents/chat.py`: Orquestrador conversacional do chat com injeção de contexto estruturado.
   - `cli.py`: Ponto de entrada CLI para geração de relatórios sem interface web.
-- **`tests/`:** Suíte completa com 13 testes unitários cobrindo analytics, compliance, chat e reporting.
+- **`tests/`:** Suíte completa com 17 testes unitários cobrindo analytics, compliance, chat, reporting e health.
 - **`.streamlit/config.toml`:** Configuração padrão do Tema Escuro (*Dark Mode* / Deep Slate) com fonte Inter nativa.
 
 ---
