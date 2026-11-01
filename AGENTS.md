@@ -41,10 +41,11 @@
   - `reporting.py`: Montagem de relatórios com números do sistema e validador anti-alucinação de códigos.
   - `health.py`: Health checks determinísticos (liveness, readiness, deep) com status RFC pass/warn/fail: SQLite, motor EVM, API Gemini (chave mascarada) e I/O. Exibido no dashboard (pílula `/health` + popover na sidebar).
   - `agents/tools.py`: Ferramentas estruturadas (`@tool`) para CrewAI consumirem o motor determinístico.
+  - `prompts.py`: Fonte única dos system prompts (blocos: identidade, Regra de Ouro, escopo/recusa, segurança anti-injeção, estilo didático) compostos por papel; contexto real (empresa, corte, nº de projetos) lido do banco.
   - `agents/crew.py`: Definição dos 4 agentes CrewAI (Controller CAPEX, Auditor Stage-Gate, Especialista em Riscos, Gerente Geral PMO).
   - `agents/chat.py`: Orquestrador conversacional do chat com injeção de contexto estruturado.
   - `cli.py`: Ponto de entrada CLI para geração de relatórios sem interface web.
-- **`tests/`:** Suíte completa com 17 testes unitários cobrindo analytics, compliance, chat, reporting e health.
+- **`tests/`:** Suíte completa com 23 testes unitários cobrindo analytics, compliance, chat, reporting, health e prompts.
 - **`.streamlit/config.toml`:** Configuração padrão do Tema Escuro (*Dark Mode* / Deep Slate) com fonte Inter nativa.
 
 ---

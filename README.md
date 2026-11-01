@@ -74,6 +74,7 @@ teste/
 │       ├── domain.py           # Regras de conformidade, limites, matriz de risco e fases FEL
 │       ├── reporting.py        # Montagem do relatório e validador anti-alucinação
 │       ├── health.py           # Health checks (liveness/readiness/deep): SQLite, motor EVM, Gemini, I/O
+│       ├── prompts.py          # System prompts centralizados (blocos comuns + papel + contexto real do banco)
 │       ├── cli.py              # Linha de comando para rodar a Crew autônoma
 │       ├── data/
 │       │   ├── generator.py    # Gerador sintético com curvas S, EVM e injeção de falhas
@@ -90,6 +91,7 @@ teste/
     ├── test_compliance.py      # Testes de auditoria e recall contra o gabarito mock
     ├── test_chat.py            # Testes do agente conversacional
     ├── test_health.py          # Testes dos health checks (liveness, motor EVM, banco, agregação)
+    ├── test_prompts.py         # Testes dos system prompts e da Crew de 4 agentes
     └── test_reporting.py       # Testes do validador anti-alucinação de códigos
 ```
 
@@ -121,7 +123,7 @@ python -m pmo_copilot.cli
 ```
 O relatório será gravado automaticamente na pasta `reports/`.
 
-### 4. Rodar a Suíte de Testes Automatizados (17 Testes)
+### 4. Rodar a Suíte de Testes Automatizados (23 Testes)
 ```bash
 pytest -v
 ```
